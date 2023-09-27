@@ -1,9 +1,15 @@
 #!/bin/bash
 
 function ask_flags () {
-    NEW_FLAGS=$1
+    if [ "$2" = "" ]; then
+        local FLAG_NAME=$1
+        NEW_FLAGS=""
+    else
+        local FLAG_NAME=$2
+        NEW_FLAGS=$1
+    fi
     while true; do
-        read -p " [Info] $2: $1. Do you want to add flags?(y/n) " yn
+        read -p " [Info] $FLAG_NAME: $NEW_FLAGS. Do you want to add flags?(y/n) " yn
         case $yn in
             [Yy]* ) read -p "Additional flags: " ADDED_FLAGS; NEW_FLAGS="$NEW_FLAGS $ADDED_FLAGS"; break;;
             [Nn]* ) break;;
@@ -52,7 +58,7 @@ if [ $1 = "install" ]; then
     # ================================== #
 
     # Check if it exists
-    if [ -f "$ARCHIVE" ]; then
+    if [ ! -f "$ARCHIVE" ]; then
         echo " [Error] File $ARCHIVE does not exist"
         exit
     fi
@@ -66,14 +72,14 @@ if [ $1 = "install" ]; then
     # Enter build folder
     cd $SRC_DIR && mkdir build && cd build
 
-    # Configure to temporary prefix 
+    # # Configure to temporary prefix 
     if [ -f "../configure" ]; then
         echo " [Info] Current TMP_PREFIX is $TMP_PREFIX"
 
         ask_flags $CONF_FLAGS CONF_FLAGS
         CONF_FLAGS=$NEW_FLAGS
 
-        ../configure --prefix=$TMP_PREFIX $CONF_FLAGS
+        ../configure $(echo "--prefix=$TMP_PREFIX $CONF_FLAGS")
     else
         echo " [Error] configure file does not exist"
         exit
@@ -97,7 +103,7 @@ if [ $1 = "install" ]; then
     TMP_FILES=$(find $TMP_PREFIX -type f)
 
     # Change prefix to target
-    TGT_FILES=$(echo $TMP_FILES -type f | sed sed 's|'$TMP_PREFIX'|'$TGT_PREFIX'|')
+    TGT_FILES=$(find $TMP_PREFIX -type f | sed 's|'$TMP_PREFIX'|'$TGT_PREFIX'|')
 
     # Convert to arrays
     readarray -t TMP_FILES_ARRAY <<<"$TMP_FILES"
@@ -105,7 +111,7 @@ if [ $1 = "install" ]; then
 
     # Install to final location
     for (( i=0; i<${#TMP_FILES_ARRAY[@]}; i++ )); do
-        cp -iv ${TMP_FILES_ARRAY[i]} ${TGT_FILES_ARRAY[i]}
+        cp -v ${TMP_FILES_ARRAY[i]} ${TGT_FILES_ARRAY[i]}
     done
 
     # Save archive and list of installed files to DIST_INST
@@ -114,14 +120,14 @@ if [ $1 = "install" ]; then
     DIR_INST_SPEC=$(echo "$DIR_INST/$SRC_DIR") # Subfolder called NAME-VERSION
     [ ! -d "$DIR_INST_SPEC" ] && mkdir $(echo "$DIR_INST_SPEC")
 
-    cp -iv $ARCHIVE $DIR_INST_SPEC
+    cp -v $ARCHIVE $DIR_INST_SPEC
 
-    [ -f "$DIR_INST_SPEC/filelist" ] rm -iv $(echo "$DIR_INST_SPEC/filelist")
+    [ -f "$DIR_INST_SPEC/filelist" ] &&  rm -v $(echo "$DIR_INST_SPEC/filelist")
     echo $TGT_FILES > $(echo "$DIR_INST_SPEC/filelist")
 
     # Cleaning up
     cd ../../
-    rm -riv $SRC_DIR
+    rm -rv $SRC_DIR
     rm -r $(echo "$TMP_PREFIX/*")
 
     echo "Installation complete"
@@ -129,7 +135,7 @@ fi
 
 if [ $1 = "remove" ]; then
     NAME=$2
-    if [ ! -f "$DIR_INST/$NAME" ]; then echo "Package is not installed"; exit; fi
+    if [ ! -d "$DIR_INST/$NAME" ]; then echo "Package is not installed"; exit; fi
 
     while true; do
         read -p " Are you sure you want to delete $NAME?(y/n) " yn
@@ -141,7 +147,7 @@ if [ $1 = "remove" ]; then
                 # Convert to array and remove
                 readarray -t TGT_FILES_ARRAY <<<"$TGT_FILES"
                 for (( i=0; i<${#TGT_FILES_ARRAY[@]}; i++ )); do
-                    rm -iv ${TGT_FILES_ARRAY[i]}
+                    rm -v ${TGT_FILES_ARRAY[i]}
                 done
 
                 mv -v $(echo "$DIR_INST/$NAME/*.tar.*") $DIR_CACHE
