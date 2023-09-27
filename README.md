@@ -21,11 +21,11 @@
     1) Extracts archive tar xf package.tar.xz
     2) If package is already installed, ask for reinstalling
     3) Creates package/build directory and enters it
-    3) If package/configure exists, reads $CONF_FLAGS and runs it
-    4a) If package/Makefile exists, reads $MAKE_FLAGS and $MAKE_INS_FLAGS and runs make && make install
-    4b) If Makefile does not exists, throws an error, because for now it only works with make
+    3) If package/configure exists, reads $CONF_FLAGS and runs it with --prefix=TMP_PREFIX
+    4) If package/Makefile exists, reads $MAKE_FLAGS and $MAKE_INS_FLAGS and runs make && make install
+    5) Parses all files in $TMP_PREFIX directory and copies them to $TGT_DIRECTORY
     5) Exits building and package directory and deletes them
-    6) Moves package archive to DIR_INST
+    6) Moves package archive to DIR_INST and saves list of installed files in DIR_INST/package/filelist
 
 ## Removing process
     
