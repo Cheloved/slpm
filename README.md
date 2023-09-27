@@ -28,4 +28,20 @@
     6) Moves package archive to DIR_INST and saves list of installed files in DIR_INST/package/filelist
 
 ## Removing process
-    
+    Syntax: slpm remove package name
+
+    1) Parses $DIR_INSTAL/package/filelist and deletes corresponding files
+    2) Moves archive from DIR_INST/package to DIR_CACHE
+    3) Removes DIR_INST/package
+
+## Get list of installed
+    Syntax: slpm show
+
+    Basically just 'ls' of $DIR_INST
+
+## TODO:
+    1) Download from Gentoo repos:
+        INDEX = $(printf '%s' filename | b2sum | cut -c1-2)
+        wget http://distfiles.gentoo.org/distfiles/INDEX/filename
+
+    2) Figure out how to search files
