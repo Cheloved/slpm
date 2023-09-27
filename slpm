@@ -119,8 +119,10 @@ if [ $1 = "install" ]; then
     [ -f "$DIR_INST_SPEC/filelist" ] rm -iv $(echo "$DIR_INST_SPEC/filelist")
     echo $TGT_FILES > $(echo "$DIR_INST_SPEC/filelist")
 
+    # Cleaning up
     cd ../../
     rm -riv $SRC_DIR
+    rm -r $(echo "$TMP_PREFIX/*")
 
     echo "Installation complete"
 fi
