@@ -72,7 +72,7 @@ if [ $1 = "install" ]; then
     # Enter build folder
     cd $SRC_DIR && mkdir build && cd build
 
-    # # Configure to temporary prefix 
+    # Configure to temporary prefix 
     if [ -f "../configure" ]; then
         echo " [Info] Current TMP_PREFIX is $TMP_PREFIX"
 
