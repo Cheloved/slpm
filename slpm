@@ -155,3 +155,7 @@ if [ $1 = "remove" ]; then
         esac
     done
 fi
+
+if [ $1 = "show" ]; then
+    ls $DIR_INST
+fi
