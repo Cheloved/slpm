@@ -39,7 +39,7 @@ if [ -z ${DIR_CACHE+x} ]; then echo "[Error] Variable DIR_CACHE is not set in /e
 if [ $1 = "install" ]; then
     # === Extract info about package === #
     # Archive filename
-    ARCHIVE=$1
+    ARCHIVE=$2
 
     # Name and folder to extract sources
     NAME="${ARCHIVE%-*}"
