@@ -1,0 +1,123 @@
+#!/bin/bash
+
+function ask_flags () {
+    NEW_FLAGS=$1
+    while true; do
+        read -p " [Info] $2: $1. Do you want to add flags?(y/n) " yn
+        case $yn in
+            [Yy]* ) read -p "Additional flags: " ADDED_FLAGS; NEW_FLAGS="$NEW_FLAGS $ADDED_FLAGS"; break;;
+            [Nn]* ) exit;;
+            * ) echo "Please answer yes or no";;
+        esac
+    done
+}
+
+# Try to source config
+if [ ! -f "/etc/slpm.conf" ]; then
+    echo "[Error] Configuration file /etc/slpm.conf does not exist"
+    exit
+fi
+source /etc/slpm.conf
+
+# Check variables
+# TGT_PREFIX     - directory where installation files are stored
+# TMP_PREFIX     - directory where temporare installation files are stored
+# CONF_FLAGS     - default flags for ./configure files
+# MAKE_FLAGS     - default flags for 'make' command
+# MAKE_INS_FLAGS - default flags for 'make install' command
+# DIR_INST       - directory where archives with install packages are stored
+# DIR_CACHE      - directory where archives with removed packages are stored
+
+if [ -z ${TGT_PREFIX+x} ]; then echo "[Error] Variable TGT_PREFIX is not set in /etc/slpm.conf"; exit; fi
+if [ -z ${TMP_PREFIX+x} ]; then echo "[Error] Variable TMP_PREFIX is not set in /etc/slpm.conf"; exit; fi
+if [ -z ${CONF_FLAGS+x} ]; then echo "[Error] Variable CONF_FLAGS is not set in /etc/slpm.conf"; exit; fi
+if [ -z ${MAKE_FLAGS+x} ]; then echo "[Error] Variable MAKE_FLAGS is not set in /etc/slpm.conf"; exit; fi
+if [ -z ${MAKE_INS_FLAGS+x} ]; then echo "[Error] Variable MAKE_INS_FLAGS is not set in /etc/slpm.conf"; exit; fi
+if [ -z ${DIR_INST+x} ]; then echo "[Error] Variable DIR_INST is not set in /etc/slpm.conf"; exit; fi
+if [ -z ${DIR_CACHE+x} ]; then echo "[Error] Variable DIR_CACHE is not set in /etc/slpm.conf"; exit; fi
+
+if [ $1 = "install" ]; then
+    # === Extract info about package === #
+    # Archive filename
+    ARCHIVE=$1
+
+    # Name and folder to extract sources
+    NAME="${ARCHIVE%-*}"
+
+    # Version
+    VERSION=$(echo $ARCHIVE | sed 's/.*-//' | sed 's/.tar.*//')
+
+    # Folder with sources
+    SRC_DIR="$NAME-$VERSION"
+    # ================================== #
+
+    # Check if it exists
+    if [ -f "$ARCHIVE" ]; then
+        echo " [Error] File $ARCHIVE does not exist"
+        exit
+    fi
+
+    echo "Installing $NAME with version $VERSION"
+
+    # Unpack it
+    echo " [Info] Unpacking archive to $NAME-$VERSION/"
+    tar xf $ARCHIVE
+
+    # Enter build folder
+    cd $SRC_DIR && mkdir build && cd build
+
+    # Configure to temporary prefix 
+    if [ -f "../configure" ]; then
+        echo " [Info] Current TMP_PREFIX is $TMP_PREFIX"
+
+        ask_flags $CONF_FLAGS CONF_FLAGS
+        CONF_FLAGS=$NEW_FLAGS
+
+        ../configure --prefix=$TMP_PREFIX $CONF_FLAGS
+    else
+        echo " [Error] configure file does not exist"
+        exit
+    fi
+
+    # === make === #
+    if [ -f "../Makefile" ]; then
+        ask_flags $MAKE_FLAGS MAKE_FLAGS
+        MAKE_FLAGS=$NEW_FLAGS
+        make $MAKE_FLAGS
+
+        ask_flags $MAKE_INS_FLAGS MAKE_INS_FLAGS
+        MAKE_INS_FLAGS=$NEW_FLAGS
+        make $MAKE_INS_FLAGS install
+    else
+        echo " [Error] Makefile does not exist"
+        exit
+    fi
+
+    # Get list of all files to be installed
+    TMP_FILES=$(find $TMP_PREFIX -type f)
+
+    # Change prefix to target
+    TGT_FILES=$(echo $TMP_FILES -type f | sed sed 's|'$TMP_PREFIX'|'$TGT_PREFIX'|')
+
+    # Convert to arrays
+    readarray -t TMP_FILES_ARRAY <<<"$TMP_FILES"
+    readarray -t TGT_FILES_ARRAY <<<"$TGT_FILES"
+
+    # Install to final location
+    for (( i=0; i<${#TMP_FILES_ARRAY[@]}; i++ )); do
+        cp -iv ${TMP_FILES_ARRAY[i]} ${TGT_FILES_ARRAY[i]}
+    done
+
+    # Save archive and list of installed files to DIST_INST
+    [ ! -d "$DIR_INST" ] && mkdir $DIR_INST
+
+    DIR_INST_SPEC=$(echo "$DIR_INST/$SRC_DIR") # Subfolder called NAME-VERSION
+    [ ! -d "$DIR_INST_SPEC" ] && mkdir $(echo "$DIR_INST_SPEC")
+
+    cp -iv $ARCHIVE $DIR_INST_SPEC
+
+    [ -f "$DIR_INST_SPEC/filelist" ] rm -iv $(echo "$DIR_INST_SPEC/filelist")
+    echo $TGT_FILES > $(echo "$DIR_INST_SPEC/filelist")
+
+    echo "Installation complete"
+fi
