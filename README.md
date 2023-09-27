@@ -7,8 +7,10 @@
     SLPM reads config file from /etc/slpm.conf, which is a shell script
     with different variables definitions.
 ### Variables
-    CONF_FLAGS - default flags for ./configure files
-    MAKE_FLAGS - default flags for 'make' command
+    TGT_PREFIX     - directory where installation files are stored
+    TMP_PREFIX     - directory where temporare installation files are stored
+    CONF_FLAGS     - default flags for ./configure files
+    MAKE_FLAGS     - default flags for 'make' command
     MAKE_INS_FLAGS - default flags for 'make install' command
     DIR_INST       - directory where archives with install packages are stored
     DIR_CACHE      - directory where archives with removed packages are stored
