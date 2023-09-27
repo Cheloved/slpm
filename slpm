@@ -6,7 +6,7 @@ function ask_flags () {
         read -p " [Info] $2: $1. Do you want to add flags?(y/n) " yn
         case $yn in
             [Yy]* ) read -p "Additional flags: " ADDED_FLAGS; NEW_FLAGS="$NEW_FLAGS $ADDED_FLAGS"; break;;
-            [Nn]* ) exit;;
+            [Nn]* ) break;;
             * ) echo "Please answer yes or no";;
         esac
     done
@@ -125,4 +125,33 @@ if [ $1 = "install" ]; then
     rm -r $(echo "$TMP_PREFIX/*")
 
     echo "Installation complete"
+fi
+
+if [ $1 = "remove" ]; then
+    NAME="${ARCHIVE%-*}"
+    if [ ! -f "$DIR_INST/$NAME" ]; then echo "Package is not installed"; exit; fi
+
+    while true; do
+        read -p " Are you sure you want to delete $NAME?(y/n) " yn
+        case $yn in
+            [Yy]* )
+                # Get list of installed files
+                TGT_FILES=$(cat $(echo "$DIR_INST/$NAME/filelist"))
+
+                # Convert to array and remove
+                readarray -t TGT_FILES_ARRAY <<<"$TGT_FILES"
+                for (( i=0; i<${#TGT_FILES_ARRAY[@]}; i++ )); do
+                    rm -iv ${TGT_FILES_ARRAY[i]}
+                done
+
+                mv -v $(echo "$DIR_INST/$NAME/*.tar.*") $DIR_CACHE
+
+                echo "Package removed"
+
+                exit ;;
+
+            [Nn]* ) break;;
+            * ) echo "Please answer yes or no";;
+        esac
+    done
 fi
