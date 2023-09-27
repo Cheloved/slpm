@@ -151,6 +151,7 @@ if [ $1 = "remove" ]; then
                 done
 
                 mv -v $(echo "$DIR_INST/$NAME/*.tar.*") $DIR_CACHE
+                rm -v $(echo "$DIR_INST/$NAME")
 
                 echo "Package removed"
 
