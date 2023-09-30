@@ -18,6 +18,33 @@ function ask_flags () {
     done
 }
 
+function sync () {
+    # Backup previous list
+    if [ -f "slpm_gentoo_package_list" ]; then
+        cp /etc/slpm_gentoo_package_list /etc/slpm_gentoo_package_list.bak
+        rm /etc/slpm_gentoo_package_list 
+    fi
+
+    for (( i=0; i<=255; i++ )); do
+        # Get index of folder in https://mirror.yandex.ru/gentoo-distfiles/distfiles/
+        INDEX=$(printf '%#x' $i | cut -dx -f2)
+        [ $i -lt "16" ] && INDEX="0"$INDEX
+        echo $index
+
+        # Parses all filenames
+        curl $GENTOO_MIRROR/distfiles/$INDEX/ | grep -o -e 'href=\".*\"' | cut -d \" -f 2 >> /etc/slpm_gentoo_package_list 
+    done
+}
+
+function help () {
+    echo "# slpm install ARCHIVE_NAME --- compiles and installs from archive"
+    echo "# slpm remove NAME-VERSION  --- removes installed via slpm apps"
+    echo "# slpm show                 --- list installed via slpm apps"
+    echo "# slpm remote PACKAGE       --- downloads archive from gentoo repos(name should be as in \"slpm list\")"
+    echo "# slpm sync                 --- parse gentoo repo for available packages"
+    echo "# slpm list                 --- prints list of available packages from gentoo repo"
+}
+
 # Try to source config
 if [ ! -f "/etc/slpm.conf" ]; then
     echo "[Error] Configuration file /etc/slpm.conf does not exist"
@@ -33,6 +60,7 @@ source /etc/slpm.conf
 # MAKE_INS_FLAGS - default flags for 'make install' command
 # DIR_INST       - directory where archives with install packages are stored
 # DIR_CACHE      - directory where archives with removed packages are stored
+# GENTOO_MIRROR  - Gentoo mirror to get sources from
 
 if [ -z ${TGT_PREFIX+x} ]; then echo "[Error] Variable TGT_PREFIX is not set in /etc/slpm.conf"; exit; fi
 if [ -z ${TMP_PREFIX+x} ]; then echo "[Error] Variable TMP_PREFIX is not set in /etc/slpm.conf"; exit; fi
@@ -41,6 +69,7 @@ if [ -z ${MAKE_FLAGS+x} ]; then echo "[Error] Variable MAKE_FLAGS is not set in 
 if [ -z ${MAKE_INS_FLAGS+x} ]; then echo "[Error] Variable MAKE_INS_FLAGS is not set in /etc/slpm.conf"; exit; fi
 if [ -z ${DIR_INST+x} ]; then echo "[Error] Variable DIR_INST is not set in /etc/slpm.conf"; exit; fi
 if [ -z ${DIR_CACHE+x} ]; then echo "[Error] Variable DIR_CACHE is not set in /etc/slpm.conf"; exit; fi
+if [ -z ${GENTOO_MIRROR+x} ]; then echo "[Error] Variable GENTOO_MIRROR is not set in /etc/slpm.conf"; exit; fi
 
 if [ $1 = "install" ]; then
     # === Extract info about package === #
@@ -131,10 +160,9 @@ if [ $1 = "install" ]; then
     rm -r $(echo "$TMP_PREFIX/*")
 
     echo "Installation complete"
-fi
-
-if [ $1 = "remove" ]; then
+elif [ $1 = "remove" ]; then
     NAME=$2
+    if [ $NAME = "" ]; then echo "Specify package to remove"; exit; fi
     if [ ! -d "$DIR_INST/$NAME" ]; then echo "Package is not installed"; exit; fi
 
     while true; do
@@ -161,8 +189,26 @@ if [ $1 = "remove" ]; then
             * ) echo "Please answer yes or no";;
         esac
     done
-fi
-
-if [ $1 = "show" ]; then
+elif [ $1 = "show" ]; then
     ls $DIR_INST
+elif [ $1 = "remote" ]; then
+    NAME=$2
+    if [ $NAME = "" ]; then echo "Specify package to download"; exit; fi
+    if [ ! grep -Fxq "$NAME" /etc/slpm_gentoo_package_list ]; then
+        echo "[ Error ] $NAME does not exist in repo. Try \"# slpm sync\" or check for misspelling"
+        exit
+    fi
+    
+    # Generate index of folder from filename
+    INDEX = $(printf '%s' filename | b2sum | cut -c1-2)
+    wget $GENTOO_MIRROR/distfiles/$INDEX/$NAME
+elif [ $1 = "sync" ]; then
+    fetch
+elif [ $1 = "list" ]; then
+    cat /etc/slpm_gentoo_package_list
+elif [ $1 = "help" ]; then
+    help
+else
+    echo "Wrong usage. Available commands:"
+    help
 fi

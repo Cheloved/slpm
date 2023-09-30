@@ -3,6 +3,14 @@
 ## About
     SLPM is able to install packages from tar archives, track them and remove.
 
+## Dependencies
+* bash
+* GNU coreutils
+* curl
+* wget
+* make
+* b2sum (Blake2b hash)
+
 ## Configuration
     SLPM reads config file from /etc/slpm.conf, which is a shell script
     with different variables definitions.
@@ -14,6 +22,7 @@
     MAKE_INS_FLAGS - default flags for 'make install' command
     DIR_INST       - directory where archives with install packages are stored
     DIR_CACHE      - directory where archives with removed packages are stored
+    GENTOO_MIRROR  - Gentoo mirror to get sources from
 
 ## Installation process
     Syntax: slpm install package.tar.xz
@@ -28,7 +37,7 @@
     6) Moves package archive to DIR_INST and saves list of installed files in DIR_INST/package/filelist
 
 ## Removing process
-    Syntax: slpm remove package name
+    Syntax: slpm remove PACKAGE-VERSION
 
     1) Parses $DIR_INSTAL/package/filelist and deletes corresponding files
     2) Moves archive from DIR_INST/package to DIR_CACHE
@@ -39,9 +48,18 @@
 
     Basically just 'ls' of $DIR_INST
 
-## TODO:
-    1) Download from Gentoo repos:
-        INDEX = $(printf '%s' filename | b2sum | cut -c1-2)
-        wget http://distfiles.gentoo.org/distfiles/INDEX/filename
+## Downloading from Gentoo repos
+    Syntax: slpm remote PACKAGE_NAME
 
-    2) Figure out how to search files
+    1) Calculates index of folder using Blake2b hash-function
+    2) Downloads PACKAGE_NAME from corresponding folder
+
+## Syncronization
+    Syntax: slpm sync
+
+    Writes list of all files available to download from Gentoo repos to /etc/slpm_gentoo_package_list
+
+## Get list of all available packages
+    Syntax: slpm list
+
+    Note: convenient to use with fzf as "slpm list | fzf" to search
