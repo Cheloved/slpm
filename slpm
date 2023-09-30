@@ -203,7 +203,7 @@ elif [ $1 = "remote" ]; then
     INDEX = $(printf '%s' filename | b2sum | cut -c1-2)
     wget $GENTOO_MIRROR/distfiles/$INDEX/$NAME
 elif [ $1 = "sync" ]; then
-    fetch
+    sync 
 elif [ $1 = "list" ]; then
     cat /etc/slpm_gentoo_package_list
 elif [ $1 = "help" ]; then
