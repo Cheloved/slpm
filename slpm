@@ -115,7 +115,7 @@ if [ $1 = "install" ]; then
     fi
 
     # === make === #
-    if [ -f "../Makefile" ]; then
+    if [ -f "../Makefile" ] || [ -f "./Makefile" ]; then
         ask_flags $MAKE_FLAGS MAKE_FLAGS
         MAKE_FLAGS=$NEW_FLAGS
         make $MAKE_FLAGS
