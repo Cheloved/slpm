@@ -194,13 +194,13 @@ elif [ $1 = "show" ]; then
 elif [ $1 = "remote" ]; then
     NAME=$2
     if [ $NAME = "" ]; then echo "Specify package to download"; exit; fi
-    if [ ! grep -Fxq "$NAME" /etc/slpm_gentoo_package_list ]; then
+    if ! grep -Fxq "$NAME" /etc/slpm_gentoo_package_list; then
         echo "[ Error ] $NAME does not exist in repo. Try \"# slpm sync\" or check for misspelling"
         exit
     fi
     
     # Generate index of folder from filename
-    INDEX = $(printf '%s' filename | b2sum | cut -c1-2)
+    INDEX=$(printf '%s' $NAME | b2sum | cut -c1-2)
     wget $GENTOO_MIRROR/distfiles/$INDEX/$NAME
 elif [ $1 = "sync" ]; then
     sync 
