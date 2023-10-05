@@ -4,6 +4,7 @@
 #include <stdio.h>   // Input/output
 #include <stdlib.h>  // malloc()
 #include <unistd.h>  // UNIX API
+#include <stdint.h>  // uint32_t
 
 #include <errno.h>   // For handling errors
 #include <string.h>
@@ -13,9 +14,9 @@
 #include <limits.h>  // _SC_ARG_MAX
 
 /*
- * Executes "file" command with NULL-terminated
- * list of arguments
+ * Executes "file" command with give list of argc arguments
 */
-int CMD(char* file, ...);
+int CMD_vec(char* file, uint32_t argc, char** argv);
+int CMD_list(char* file, uint32_t argc, ...);
 
 #endif

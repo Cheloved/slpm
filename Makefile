@@ -21,5 +21,7 @@ OBJ_NAME=slpm
 #This is the target that compiles our executable
 all: 
 	$(CC) $(COMPILER_FLAGS) $(LINKER_FLAGS) $(SRC_FOLDER)/$(OBJS) -o $(OBJ_NAME)
+pre:
+	$(CC) $(COMPILER_FLAGS) -E $(LINKER_FLAGS) $(SRC_FOLDER)/$(OBJS)
 debug:
 	$(CC) $(COMPILER_FLAGS) $(DEBUG_FLAGS) $(LINKER_FLAGS) $(SRC_FOLDER)/$(OBJS) -o $(OBJ_NAME)
