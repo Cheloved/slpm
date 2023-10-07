@@ -2,15 +2,11 @@
 #define __H_CORE
 
 #include <stdio.h>    // Input/output
-#include <stdlib.h>   // malloc()
+#include <stdlib.h>   // exit()
 #include <unistd.h>   // UNIX API
 #include <sys/wait.h> // waitpid()
 #include <stdint.h>   // uint32_t
-
 #include <errno.h>    // For handling errors
-#include <string.h>
-#include <strings.h>  // bzero()
-
 #include <stdarg.h>   // For variadic functions
 
 /*

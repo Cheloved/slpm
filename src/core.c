@@ -1,5 +1,4 @@
 #include "libs/core.h"
-#include <unistd.h>
 
 int CMD_vec(char* file, int* fd, uint32_t argc, char** argv)
 {

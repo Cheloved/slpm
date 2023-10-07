@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include "libs/core.h"
+#include "libs/utils.h"
 
 // Just testing
 int main(int argc, char** argv)
 {
+    check_root();
+
     /* char* file = (char*)"lss"; */
     /* char* arg1  = (char*)"-l"; */
     /* char* arg2  = (char*)"-a"; */
@@ -19,15 +22,15 @@ int main(int argc, char** argv)
     int fd = 0;
     CMD_list(file, &fd, 2, arg1, arg2);
 
-    char buffer[1024];
-    while (read(fd, buffer, sizeof(buffer)) != 0)
-        printf("READED FROM FD:\n%s", buffer);
-    printf("READ END\n");
+    /* char buffer[1024]; */
+    /* while (read(fd, buffer, sizeof(buffer)) != 0) */
+    /*     printf("READED FROM FD:\n%s", buffer); */
+    /* printf("READ END\n"); */
 
 
 
     /* char* file2 = (char*)"grep"; */
     /* char* args[2] = {"return", "src/main.c"}; */
-    /* CMD_vec(file2, 2, args); */
+    /* CMD_vec(file2, NULL, 2, args); */
     return 0;
 }
