@@ -14,9 +14,13 @@
 #include <stdarg.h>   // For variadic functions
 
 /*
- * Executes "file" command with give list of argc arguments
+ * Executes "file" command with give list of argc arguments.
+ *
+ * If output of command need to be parsed,
+ * file descriptor to read from will be returned as int* fd.
+ * If note, NULL may be passed
 */
-int CMD_vec(char* file, uint32_t argc, char** argv);
-int CMD_list(char* file, uint32_t argc, ...);
+int CMD_vec(char* file, int* fd, uint32_t argc, char** argv);
+int CMD_list(char* file, int* fd, uint32_t argc, ...);
 
 #endif

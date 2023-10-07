@@ -1,6 +1,7 @@
 #include "libs/core.h"
+#include <unistd.h>
 
-int CMD_vec(char* file, uint32_t argc, char** argv)
+int CMD_vec(char* file, int* fd, uint32_t argc, char** argv)
 {
     // Total amount of arguments,
     // including file itself and NULL-terminator
@@ -18,6 +19,16 @@ int CMD_vec(char* file, uint32_t argc, char** argv)
     args[0]       = file;
     args[targc-1] = (char*)NULL;
 
+    // Define pipe file descriptors
+    // and create a pipe
+    int pipefd[2]; // pipefd[0] - read end, pipefd[1] - write end
+    pipe(pipefd);
+
+    // Return read file descriptor in fd
+    // if needed
+    if ( fd != NULL )
+        *fd = pipefd[0];
+
     // Fork process
     pid_t pid = fork();
     if ( pid < 0 )
@@ -30,11 +41,26 @@ int CMD_vec(char* file, uint32_t argc, char** argv)
 
     if ( pid == 0 )
     {
+        // Close reading end in the child
+        close(pipefd[0]);
+
+        // Send stdout and stderr to the pipe
+        dup2(pipefd[1], 1);
+        dup2(pipefd[1], 2);
+
         // As child process execute command, passing list of arguments
         // and using PATH variable to access the file
         int ret_val = execvp(file, args);
+
+        // Since this descriptor is no longer needed,
+        // close it
+        close(pipefd[1]);
+
         exit(ret_val);
     } else {
+        // Close the write end of the pipe in the parent
+        close(pipefd[1]);
+
         // As parent wait for child process to end
         int status = -1; // Return status of child process
         if ( waitpid(pid, &status, 0) == -1 )
@@ -57,6 +83,7 @@ int CMD_vec(char* file, uint32_t argc, char** argv)
                 fprintf(stderr, "\n");
                 /* fprintf(stderr, ":\n  %s", strerror(errno)); */
             }
+
             return es;
         }
     }
@@ -64,7 +91,7 @@ int CMD_vec(char* file, uint32_t argc, char** argv)
     return 0;
 }
 
-int CMD_list(char* file, uint32_t argc, ...)
+int CMD_list(char* file, int* fd, uint32_t argc, ...)
 {
     // Initialize variadic list
     va_list ap;
@@ -79,7 +106,7 @@ int CMD_list(char* file, uint32_t argc, ...)
     va_end(ap);
 
     // Call 
-    int ret_val = CMD_vec(file, argc, args);
+    int ret_val = CMD_vec(file, fd, argc, args);
 
     return ret_val;
 }
