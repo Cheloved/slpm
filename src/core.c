@@ -177,3 +177,42 @@ int Remove_list(uint32_t argc, ...)
 
     return ret_val;
 }
+
+int Copy_file_to_dir(char* from, char* target_dir)
+{
+    char* args[2] = { from, target_dir };
+    int ret_val = CMD_vec("cp", NULL, 2, args);
+
+    return ret_val;
+}
+
+int Copy_files_to_dir(uint32_t argc, char** from_files, char* target_dir)
+{
+    // Total amount of arguments for cp
+    char* args[argc+1];
+
+    for ( int i = 0; i < argc; i++ )
+        args[i] = from_files[i];
+
+    args[argc] = target_dir;
+
+    int ret_val = CMD_vec("cp", NULL, argc+1, args);
+
+    return ret_val; 
+}
+
+int Copy_dir_to_dir(char* from_dir, char* target_dir)
+{
+    char* args[3] = { "-r", from_dir, target_dir };
+    int ret_val = CMD_vec("cp", NULL, 3, args);
+
+    return ret_val;
+}
+
+int Copy_file_to_file(char* from, char* to)
+{
+    char* args[2] = { from, to };
+    int ret_val = CMD_vec("cp", NULL, 2, args);
+
+    return ret_val;
+}

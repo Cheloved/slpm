@@ -33,5 +33,19 @@ int Remove_list(uint32_t argc, ...);
 int Remove_file(char* file);
 int Remove_dir(char* dir);
 
+/*
+ * Copies using exec()
+*/
+// cp from target_dir
+int Copy_file_to_dir(char* from, char* target_dir);
+
+// cp file1 file2... target_dir
+int Copy_files_to_dir(uint32_t argc, char** from_files, char* target_dir);
+
+// cp -r from_dir target_dir
+int Copy_dir_to_dir(char* from_dir, char* target_dir);
+
+// cp from to 
+int Copy_file_to_file(char* from, char* to);
 
 #endif
