@@ -58,10 +58,12 @@ void* thread_fetch_gentoo(void *vargp)
         // Insert data in template
         sprintf(addr, template, data->mirror, i);
 
+        char* content;
+        download_page(data->mirror, &content);
+
         /*
          * === TODO ===
-         * 1) Download dir content using libcurl
-         * 2) Parse it to get packages names and versions
+         * Parse content to get packages names and versions
         */
 
         if ( data->id == 0 )

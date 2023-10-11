@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "libs/core.h"
 #include "libs/utils.h"
 #include "libs/webutils.h"
+#include "libs/curlfetch.h"
 
 // Just testing
 int main(int argc, char** argv)

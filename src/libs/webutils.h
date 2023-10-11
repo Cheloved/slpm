@@ -9,6 +9,7 @@
 #include <stdatomic.h> // atomic_int
 #include <string.h>
 #include "core.h"
+#include "curlfetch.h"
 
 #define THR_BUFFER_SIZE 2097152
 #define THR_BATCH_SIZE 524288

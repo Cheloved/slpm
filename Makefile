@@ -13,7 +13,7 @@ COMPILER_FLAGS=-Wall -O2
 DEBUG_FLAGS=-g
 
 #LINKER_FLAGS specifies the libraries we're linking against
-LINKER_FLAGS=-lpthread
+LINKER_FLAGS=-lpthread -lcurl
 
 #OBJ_NAME specifies the name of our exectuable
 OBJ_NAME=slpm
