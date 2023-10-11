@@ -1,5 +1,15 @@
 #include "libs/core.h"
 
+int is_dir(const char *path)
+{
+    struct stat statbuf;
+
+    if (stat(path, &statbuf) != 0)
+       return 0;
+
+    return S_ISDIR(statbuf.st_mode);
+}
+
 int CMD_vec(char* file, int* fd, uint32_t argc, char** argv)
 {
     // Total amount of arguments,
@@ -106,6 +116,64 @@ int CMD_list(char* file, int* fd, uint32_t argc, ...)
 
     // Call 
     int ret_val = CMD_vec(file, fd, argc, args);
+
+    return ret_val;
+}
+
+int Remove_file(char *file)
+{
+    // Remove file if it exists
+    if (access(file, F_OK) != 0)
+        return -1;
+
+    remove(file);
+
+    return 0;
+}
+
+int Remove_dir(char *dir)
+{
+    // Delete if empty
+    int ret_val = rmdir(dir);
+
+    // If not, call rm -r dir
+    if ( ret_val != 0 && ( errno == ENOTEMPTY || errno == EEXIST ) )
+        execlp("rm", "rm", "-r", dir, NULL);
+
+    return 0;
+}
+
+int Remove_vec(uint32_t argc, char** files)
+{
+    for ( int i = 0; i < argc; i++ )
+    {
+        char* file = files[i];
+
+        if ( is_dir(file) )
+            Remove_dir(file);
+        else
+            Remove_file(file);
+    }
+
+    return 0;
+}
+
+int Remove_list(uint32_t argc, ...)
+{
+    // Initialize variadic list
+    va_list ap;
+    va_start(ap, argc);
+
+    // Vector of all arguments
+    char* args[argc];
+
+    // Copy pointers
+    for ( int i = 0; i < argc; i++ )
+        args[i] = va_arg(ap, char*);
+    va_end(ap);
+
+    // Call 
+    int ret_val = Remove_vec(argc, args);
 
     return ret_val;
 }

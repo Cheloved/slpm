@@ -16,11 +16,11 @@ int main(int argc, char** argv)
     /*     CMD_list(file, NULL, 3, "-l", "-a", "-h"); */
     /* } */
 
-    char* file = (char*)"ls";
-    char* arg1  = (char*)"-l";
-    char* arg2  = (char*)"-a";
-    int fd = 0;
-    CMD_list(file, &fd, 2, arg1, arg2);
+    /* char* file = (char*)"ls"; */
+    /* char* arg1  = (char*)"-l"; */
+    /* char* arg2  = (char*)"-a"; */
+    /* int fd = 0; */
+    /* CMD_list(file, &fd, 2, arg1, arg2); */
 
     /* char buffer[1024]; */
     /* while (read(fd, buffer, sizeof(buffer)) != 0) */
@@ -32,5 +32,9 @@ int main(int argc, char** argv)
     /* char* file2 = (char*)"grep"; */
     /* char* args[2] = {"return", "src/main.c"}; */
     /* CMD_vec(file2, NULL, 2, args); */
+
+    /* Remove_file("./test/test1"); */
+    /* Remove_dir("./test/layer2"); */
+    /* Remove_list(2, "./test/test2", "./test/fold"); */
     return 0;
 }
