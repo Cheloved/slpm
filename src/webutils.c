@@ -1,5 +1,7 @@
 #include "libs/webutils.h"
 #include "libs/core.h"
+#include "libs/webparser.h"
+#include <stdio.h>
 
 /*
  * This variable locks access to 
@@ -43,7 +45,7 @@ void* thread_fetch_gentoo(void *vargp)
     {
         // Template will turn in smth like
         // https://mirror.domain/f3/
-        char* template = i < 16? "/distfiles/%s/0%x/" : "/distfiles/%s/%x/";
+        char* template = i < 16? "%s/distfiles/0%x/" : "%s/distfiles/%x/";
 
         // Size of address is length of mirror
         // + 9 for distfiles
@@ -59,7 +61,10 @@ void* thread_fetch_gentoo(void *vargp)
         sprintf(addr, template, data->mirror, i);
 
         char* content;
-        download_page(data->mirror, &content);
+        download_page(addr, &content);
+
+        s_package* packages;
+        size_t p_count = parse_gentoo_dir(addr, content, packages);
 
         /*
          * === TODO ===
