@@ -11,7 +11,11 @@
 #include "core.h"
 #include "curlfetch.h"
 
+// 2Mb - approximate max size of package data
 #define THR_BUFFER_SIZE 2097152
+
+// 512kb - buffer size for single
+// Gentoo repo directory
 #define THR_BATCH_SIZE 524288
 
 // This structure is passed

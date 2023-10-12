@@ -46,12 +46,12 @@ void* thread_fetch_gentoo(void *vargp)
         char* template = i < 16? "/distfiles/%s/0%x/" : "/distfiles/%s/%x/";
 
         // Size of address is length of mirror
-        // + 10 for /distfiles
-        // + 2 for two slashes
+        // + 9 for distfiles
+        // + 4 for four slashes
         // + 2 for index of folder
         // + 1 for null-terminator
-        // = 15
-        size_t addr_size = strlen(data->mirror) + 15;
+        // = 16
+        size_t addr_size = strlen(data->mirror) + 16;
         char addr[addr_size];
         bzero(addr, addr_size);
 
