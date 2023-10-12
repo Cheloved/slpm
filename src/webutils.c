@@ -81,14 +81,13 @@ void* thread_fetch_gentoo(void *vargp)
         }
     }
 
-    // If file is locked,
-    // wait 1ms
-    while ( lock )
+    // Wait for previos threads(id is less then current)
+    // to write
+    while ( lock != data->id )
         usleep(1000);
 
     // When file is unlocked,
     // lock it and write data to it
-    lock = 1;
     printf(" [DEBUG] Thread %u locked file\n", data->id); 
 
     FILE *fptr;
@@ -102,7 +101,8 @@ void* thread_fetch_gentoo(void *vargp)
     // Close the file
     fclose(fptr);
 
-    lock = 0;
+    // Allow next thread to write
+    lock++;
     printf(" [DEBUG] Thread %u unlocked file\n", data->id); 
 
     printf(" [DEBUG] Thread %d ended\n", data->id);
