@@ -1,7 +1,9 @@
 #include "libs/webutils.h"
 #include "libs/core.h"
+#include "libs/packages.h"
 #include "libs/webparser.h"
 #include <stdio.h>
+#include <strings.h>
 
 /*
  * This variable locks access to 
@@ -38,7 +40,7 @@ void* thread_fetch_gentoo(void *vargp)
     // Allocate memory to be enough even
     // if amount of threads is 1.
     // 2MB in this case
-    char* packages = (char*)calloc(THR_BUFFER_SIZE, sizeof(char));
+    char* packages_string = (char*)calloc(THR_BUFFER_SIZE, sizeof(char));
     uint32_t length = 0;
 
     for ( uint32_t i = start_dir; i < end_dir; i++ )
@@ -60,53 +62,50 @@ void* thread_fetch_gentoo(void *vargp)
         // Insert data in template
         sprintf(addr, template, data->mirror, i);
 
+        // Download page using libcurl
         char* content;
         download_page(addr, &content);
 
+        // Parse all packages
         s_package* packages;
-        size_t p_count = parse_gentoo_dir(addr, content, packages);
+        size_t p_count = parse_gentoo_dir(addr, addr_size, content, &packages);
 
-        /*
-         * === TODO ===
-         * Parse content to get packages names and versions
-        */
-
-        if ( data->id == 0 )
+        // Buffer for conversion from package to string
+        char* p_to_s_buffer;
+        for ( int n = 0; n < p_count; n++ )
         {
-            printf(" [DEBUG] Thread 0 folder %s\n", addr);
-            /* char batch[THR_BATCH_SIZE]; */
-            /* while (read(fd, batch, sizeof(batch)) != 0) */
-            /*     printf("READED FROM FD:\n%s", batch); */
-            /* printf("READ END\n"); */
+            p_to_s_buffer = package_to_str(&packages[n]);
+            strcat(packages_string, p_to_s_buffer);
+            free(p_to_s_buffer);
         }
     }
 
+    // If file is locked,
+    // wait 1ms
+    while ( lock )
+        usleep(1000);
 
+    // When file is unlocked,
+    // lock it and write data to it
+    lock = 1;
+    printf(" [DEBUG] Thread %u locked file\n", data->id); 
+
+    FILE *fptr;
+
+    // Open a file in append mode
+    fptr = fopen("parsed.txt", "a");
+
+    // Write some text to the file
+    fprintf(fptr, "%s", packages_string);
+
+    // Close the file
+    fclose(fptr);
+
+    lock = 0;
+    printf(" [DEBUG] Thread %u unlocked file\n", data->id); 
+
+    printf(" [DEBUG] Thread %d ended\n", data->id);
     pthread_exit(0);
-    /* // If file is locked, */
-    /* // wait 1ms */
-    /* while ( lock ) */
-    /*     usleep(1000); */
-
-    /* // When file is unlocked, */
-    /* // lock it and write data to it */
-    /* lock = 1; */
-    /* printf(" [DEBUG] Thread %lu locked file\n", data->id); */ 
-
-    /* // Fork process */
-    /* pid_t pid = fork(); */
-
-    /* if ( pid == 0 ) */
-    /* { */
-    /*     // As child process execute command, passing list of arguments */
-    /*     // and using PATH variable to access the file */
-    /*     int ret_val = execlp("bash", "bash", "-c", "echo test >> lock.file", NULL); */
-    /*     exit(ret_val); */
-    /* } */
-    /* lock = 0; */
-    /* printf(" [DEBUG] Thread %lu unlocked file\n", data->id); */ 
-
-    /* pthread_exit(0); */
 } 
 
 int fetch_gentoo(uint32_t thr_count, char* mirror)

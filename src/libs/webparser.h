@@ -1,6 +1,7 @@
 #ifndef __H_WEBPARSER
 #define __H_WEBPARSER
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -22,7 +23,8 @@ int parse_gentoo_line(char* line, size_t len, s_package* package);
  * Returns amount of packages and array of s_package with info.
  * Negative returns indicate error
 */
-size_t parse_gentoo_dir(char* addr, char* content, s_package* packages);
+size_t parse_gentoo_dir(char* addr, size_t addr_size,
+                        char* content, s_package** packages);
 
 
 #endif
