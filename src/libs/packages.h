@@ -10,6 +10,7 @@ typedef struct
     char* name;
     char* ver;
     char* last_upload;
+    char* size_str;
     uint32_t size;
     char* link;
 } s_package;
