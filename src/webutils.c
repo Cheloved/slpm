@@ -1,5 +1,6 @@
 #include "libs/webutils.h"
 #include "libs/core.h"
+#include "libs/defines.h"
 #include "libs/packages.h"
 #include "libs/webparser.h"
 #include <stdio.h>
@@ -93,7 +94,7 @@ void* thread_fetch_gentoo(void *vargp)
     FILE *fptr;
 
     // Open a file in append mode
-    fptr = fopen("parsed.txt", "a");
+    fptr = fopen(PKGLIST_PATH, "a");
 
     // Write some text to the file
     fprintf(fptr, "%s", packages_string);
@@ -110,6 +111,9 @@ void* thread_fetch_gentoo(void *vargp)
 
 int fetch_gentoo(uint32_t thr_count, char* mirror)
 {
+    // Remove list if exists
+    Remove_file(PKGLIST_PATH); 
+
     // Unlock file
     lock = 0;
   

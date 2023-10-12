@@ -10,6 +10,7 @@
 #include <string.h>
 #include "core.h"
 #include "curlfetch.h"
+#include "defines.h"
 
 // 2Mb - approximate max size of package data
 #define THR_BUFFER_SIZE 2097152
