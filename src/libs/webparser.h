@@ -10,9 +10,15 @@
 #include "packages.h"
 
 #define MAX_PACK_PER_GENTOO_DIR 512
+#define MAX_DIRS 2048
 
 // Gets length of a line
 size_t get_line_len(char* line);
+
+size_t get_dir_name(char* line, size_t line_len, char** name);
+
+// Gets list of directories addresses
+size_t get_dirs(char* addr, char*** dirs);
 
 // Parses content of line into package struct
 int parse_gentoo_line(char* line, size_t len, s_package* package);

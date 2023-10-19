@@ -25,6 +25,8 @@ typedef struct {
     uint32_t id;
     uint32_t thr_count;
     char* mirror;
+    size_t c_count;
+    char** categories;
 } s_fetch_data;
 
 /* 
@@ -34,5 +36,8 @@ typedef struct {
 */
 void* thread_fetch_gentoo(void *vargp);
 int fetch_gentoo(uint32_t thr_count, char* mirror);
+
+void* thread_fetch_ebuild(void *vargp);
+int fetch_ebuild(uint32_t thr_count, char* mirror);
 
 #endif

@@ -1,5 +1,7 @@
 #include "libs/webparser.h"
+#include "libs/curlfetch.h"
 #include "libs/packages.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -113,4 +115,92 @@ size_t parse_gentoo_dir(char* addr, size_t addr_size,
     memcpy(*packages, buffer, p_count*sizeof(s_package));
 
     return p_count;
+}
+
+size_t get_dir_name(char* line, size_t line_len, char** name)
+{
+    // Find indexes of quotes,
+    // between whose name is contained
+    char* quote1 = strstr(line, "\'");
+    if ( quote1 == NULL )
+        return -1;
+
+    char* quote2 = strstr(quote1+1, "\'");
+    if ( quote2 == NULL )
+        return -1;
+
+    // Name must end with /
+    if ( *(quote2-1) != '/' )
+        return -1;
+    
+    // Find previous slash
+    char* p = quote2 - 2;
+    size_t name_len = 0;
+    while ( *p != '/' ) { name_len++; p--; }
+
+    // Add 1 to length for skipped slashes
+    name_len += 1;
+
+    // Copy data
+    *name = (char*)calloc(name_len+1, sizeof(char));
+    memcpy(*name, p+1, name_len);
+
+    return name_len;
+}
+
+size_t get_dirs(char* addr, char*** dirs)
+{
+    // Download page
+    char* content;
+    int ret_val = download_page(addr, &content);
+    if ( ret_val != 0 )
+    {
+        fprintf(stderr, " [ERROR] Can't download page %s\n", addr);
+        return -1;
+    }
+
+    // Get length of page content
+    uint32_t content_len = strlen(content);
+
+    // Consider line is containing dir 
+    // if it starts with
+    const char* p_line_start = "<a href=\'";
+    size_t start_len = strlen(p_line_start);
+
+    // Define buffer array of dirs 
+    char* buffer[MAX_DIRS];
+    size_t dir_count = 0; // Amount of dirs 
+
+    char* tmp = content; // Temporary pointer to content
+    char* start;         // Pointer to the start of a line
+
+    // Read while there are still occurences of p_line_start
+    while ( (start = strstr(tmp, p_line_start)) != NULL )
+    {
+        // Get length of a line
+        size_t line_len = get_line_len(start);
+
+        // Parse name
+        size_t name_len = get_dir_name(start, line_len, &buffer[dir_count]);
+
+        // Move tmp pointer further
+        tmp = start+1;
+
+        // If not a dir, free and skip
+        if ( name_len < 0 || buffer[dir_count] == NULL )
+        {
+            free(buffer[dir_count]);
+            continue;
+        }
+
+        /* printf(" [DEBUG] Dir found: \"%s\"\n", buffer[dir_count]); */
+
+        // Increease amount
+        dir_count++;
+    }
+
+    *dirs = (char**)calloc(dir_count, sizeof(char*));
+    memcpy(*dirs, buffer, dir_count*sizeof(char*));
+
+    return dir_count;
 }
