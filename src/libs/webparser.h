@@ -15,10 +15,14 @@
 // Gets length of a line
 size_t get_line_len(char* line);
 
-size_t get_dir_name(char* line, size_t line_len, char** name);
+// Extracts name of file or folder in given line
+size_t get_name(char* line, size_t line_len, char** name);
 
-// Gets list of directories addresses
-size_t get_dirs(char* addr, char*** dirs);
+// Gets list of files or directories addresses
+// is_dir = 0  - search for files only
+// is_dir = 1  - search for folders only
+// is_dir = -1 - search for both
+size_t get_files(char* addr, char*** dirs, int is_dir);
 
 // Parses content of line into package struct
 int parse_gentoo_line(char* line, size_t len, s_package* package);

@@ -191,7 +191,7 @@ void* thread_fetch_ebuild(void *vargp)
 
         // Parse all packages directories
         char** p_dirs;
-        size_t p_count = get_dirs(addr, &p_dirs);
+        size_t p_count = get_files(addr, &p_dirs, 1);
         printf(" [DEBUG] Thread %d found %d packages in %s\n",
                 data->id, p_count, data->categories[i]);
 
@@ -243,7 +243,7 @@ int fetch_ebuild(uint32_t thr_count, char* mirror)
     Remove_file(PKGLIST_PATH); 
 
     char** categories;
-    size_t c_count = get_dirs(mirror, &categories);
+    size_t c_count = get_files(mirror, &categories, 1);
 
     printf(" [DEBUG] %d categories found\n", c_count);
 

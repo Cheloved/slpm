@@ -117,7 +117,7 @@ size_t parse_gentoo_dir(char* addr, size_t addr_size,
     return p_count;
 }
 
-size_t get_dir_name(char* line, size_t line_len, char** name)
+size_t get_name(char* line, size_t line_len, char** name)
 {
     // Find indexes of quotes,
     // between whose name is contained
@@ -128,18 +128,14 @@ size_t get_dir_name(char* line, size_t line_len, char** name)
     char* quote2 = strstr(quote1+1, "\'");
     if ( quote2 == NULL )
         return -1;
-
-    // Name must end with /
-    if ( *(quote2-1) != '/' )
-        return -1;
     
     // Find previous slash
     char* p = quote2 - 2;
-    size_t name_len = 0;
-    while ( *p != '/' ) { name_len++; p--; }
+    while ( *p != '/' )
+        p--;
 
-    // Add 1 to length for skipped slashes
-    name_len += 1;
+    // Calculate length of name
+    size_t name_len = quote2-1 - p;
 
     // Copy data
     *name = (char*)calloc(name_len+1, sizeof(char));
@@ -148,7 +144,7 @@ size_t get_dir_name(char* line, size_t line_len, char** name)
     return name_len;
 }
 
-size_t get_dirs(char* addr, char*** dirs)
+size_t get_files(char* addr, char*** dirs, int is_dir)
 {
     // Download page
     char* content;
@@ -181,13 +177,27 @@ size_t get_dirs(char* addr, char*** dirs)
         size_t line_len = get_line_len(start);
 
         // Parse name
-        size_t name_len = get_dir_name(start, line_len, &buffer[dir_count]);
+        size_t name_len = get_name(start, line_len, &buffer[dir_count]);
 
         // Move tmp pointer further
         tmp = start+1;
 
-        // If not a dir, free and skip
+        // Handle wrong lines
         if ( name_len < 0 || buffer[dir_count] == NULL )
+        {
+            free(buffer[dir_count]);
+            continue;
+        }
+
+        // If searching for files, but name is directory, skip
+        if ( is_dir == 0 && buffer[dir_count][name_len-1] == '/' )
+        {
+            free(buffer[dir_count]);
+            continue;
+        }
+
+        // If searching for directories, but name is file, skip
+        if ( is_dir == 1 && buffer[dir_count][name_len-1] != '/' )
         {
             free(buffer[dir_count]);
             continue;
