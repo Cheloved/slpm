@@ -195,9 +195,19 @@ void* thread_fetch_ebuild(void *vargp)
         printf(" [DEBUG] Thread %d found %d packages in %s\n",
                 data->id, p_count, data->categories[i]);
 
-        /* for ( int j = 0; j < p_count; j++ ) */
-        /*     printf(" [DEBUG] Thread %d found package %s\n", data->id, */
-        /*                                                     p_dirs[j]); */
+        for ( int j = 0; j < p_count; j++ )
+        {
+            printf(" [DEBUG] Thread %d found package %s\n", data->id,
+                                                            p_dirs[j]);
+            
+            // === TODO === //
+            // 1) Concatenate addr and package name
+            // 2) Get list of all files in package folder
+            // 3) Search for Manifest file and skip if not exists
+            // 4) Extract available versions from *.ebuild files
+            // 5) Extract archive name, size and BLAKE2 hash from Manifest
+            // 6) Convert to string and append to packages_string
+        }
 
         /* // Buffer for conversion from package to string */
         /* char* p_to_s_buffer; */
