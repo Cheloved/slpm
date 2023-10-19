@@ -203,6 +203,13 @@ size_t get_files(char* addr, char*** dirs, int is_dir)
             continue;
         }
 
+        // Skip if it's ../
+        if ( !strcmp(buffer[dir_count], "plain/") )
+        {
+            free(buffer[dir_count]);
+            continue;
+        }
+
         /* printf(" [DEBUG] Dir found: \"%s\"\n", buffer[dir_count]); */
 
         // Increease amount
