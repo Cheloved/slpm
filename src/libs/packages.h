@@ -12,9 +12,9 @@ typedef struct
 {
     char* name;
     char* ver;
-    char* last_upload;
+    char* archive;
     char* size_str;
-    uint32_t size;
+    char folder[3];
     char* link;
 } s_package;
 

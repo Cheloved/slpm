@@ -4,6 +4,7 @@
 #include "libs/defines.h"
 #include "libs/packages.h"
 #include "libs/webparser.h"
+#include <curl/curl.h>
 #include <stdio.h>
 #include <strings.h>
 
@@ -166,7 +167,6 @@ void* thread_fetch_ebuild(void *vargp)
     // if amount of threads is 1.
     // 2MB in this case
     char* packages_string = (char*)calloc(THR_BUFFER_SIZE, sizeof(char));
-    uint32_t length = 0;
 
     for ( uint32_t i = start_dir; i < end_dir; i++ )
     {
@@ -193,13 +193,15 @@ void* thread_fetch_ebuild(void *vargp)
         // Parse all packages directories
         char** p_dirs;
         size_t p_count = get_files(addr, &p_dirs, 1);
-        printf(" [DEBUG] Thread %d found %d packages in %s\n",
+        if ( p_count == 0 )
+            continue;
+
+        printf(" [DEBUG] Thread %d found %lu packages in %s\n",
                 data->id, p_count, data->categories[i]);
 
         for ( int j = 0; j < p_count; j++ )
         {
-            /* printf(" [DEBUG] Thread %d found package %s\n", data->id, */
-            /*                                                 p_dirs[j]); */
+            printf(" [DEBUG] Thread %d found package %s\n", data->id, p_dirs[j]);
 
             // Concatenate addr and package name to get full path
             char p_path[MAX_PATH_LEN] = {0};
@@ -210,57 +212,65 @@ void* thread_fetch_ebuild(void *vargp)
             s_package* pkg;
             size_t ver_count = parse_ebuild_package(p_path, p_dirs[j], &pkg);
 
-            // === TODO === //
-            // 1) Convert to string and append to packages_string
+            // Buffer for conversion from package to string
+            for ( int n = 0; n < ver_count; n++ )
+            {
+                char* p_to_s_buffer = package_to_str(&(pkg[n]));
+                if ( p_to_s_buffer == NULL )
+                    continue;
+                /* printf("  [DEBUG] PtoS: %s\n", p_to_s_buffer); */
+                /* exit(0); */
+                strcat(packages_string, p_to_s_buffer);
+                printf("  [DEBUG] New pstring:\n%s\n", packages_string);
+                free(p_to_s_buffer);
+            }
         }
+        break;
 
-        /* // Buffer for conversion from package to string */
-        /* char* p_to_s_buffer; */
-        /* for ( int n = 0; n < p_count; n++ ) */
-        /* { */
-        /*     p_to_s_buffer = package_to_str(&packages[n]); */
-        /*     strcat(packages_string, p_to_s_buffer); */
-        /*     free(p_to_s_buffer); */
-        /* } */
     }
 
-    /* // Wait for previos threads(id is less then current) */
-    /* // to write */
-    /* while ( lock != data->id ) */
-    /*     usleep(1000); */
+    printf("\n [DEBUG] Thread %d ended. Parsed files:\n%s\n\n", data->id, packages_string);
 
-    /* // When file is unlocked, */
-    /* // lock it and write data to it */
-    /* printf(" [DEBUG] Thread %u locked file\n", data->id); */ 
+    // Wait for previos threads(id is less then current)
+    // to write
+    while ( lock != data->id )
+        usleep(1000);
 
-    /* FILE *fptr; */
+    // When file is unlocked,
+    // lock it and write data to it
+    printf(" [DEBUG] Thread %u locked file\n", data->id); 
 
-    /* // Open a file in append mode */
-    /* fptr = fopen(PKGLIST_PATH, "a"); */
+    // Open a file in append mode
+    FILE *fptr;
+    fptr = fopen(PKGLIST_PATH, "a");
 
-    /* // Write some text to the file */
-    /* fprintf(fptr, "%s", packages_string); */
+    // Write some text to the file
+    fprintf(fptr, "%s", packages_string);
 
-    /* // Close the file */
-    /* fclose(fptr); */
+    // Close the file
+    fclose(fptr);
 
-    /* // Allow next thread to write */
-    /* lock++; */
-    /* printf(" [DEBUG] Thread %u unlocked file\n", data->id); */ 
+    // Allow next thread to write
+    lock++;
+    printf(" [DEBUG] Thread %u unlocked file\n", data->id); 
 
-    /* printf(" [DEBUG] Thread %d ended\n", data->id); */
+    printf(" [DEBUG] Thread %d ended\n", data->id);
     pthread_exit(0);
 } 
 
 int fetch_ebuild(uint32_t thr_count, char* mirror)
 {
+    curl_global_init(CURL_GLOBAL_ALL);
+
     // Remove list if exists
     Remove_file(PKGLIST_PATH); 
 
     char** categories;
     size_t c_count = get_files(mirror, &categories, 1);
+    if ( c_count == 0 )
+        return 0;
 
-    printf(" [DEBUG] %d categories found\n", c_count);
+    printf(" [DEBUG] %lu categories found\n", c_count);
 
     // Unlock file
     lock = 0;
@@ -288,5 +298,7 @@ int fetch_ebuild(uint32_t thr_count, char* mirror)
     for( int i = 0; i < thr_count; i++)
         pthread_join(thread_ids[i], NULL);
   
+    curl_global_cleanup();
+
     return 0; 
 }

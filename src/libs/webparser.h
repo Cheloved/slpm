@@ -12,6 +12,7 @@
 #define MAX_PACK_PER_GENTOO_DIR 512
 #define MAX_DIRS 2048
 #define MAX_PATH_LEN 512
+#define MAX_VERSIONS 1024
 
 // Gets length of a line
 size_t get_line_len(char* line);
@@ -24,6 +25,10 @@ size_t get_name(char* line, size_t line_len, char** name);
 // is_dir = 1  - search for folders only
 // is_dir = -1 - search for both
 size_t get_files(char* addr, char*** dirs, int is_dir);
+
+// Parse manifest file
+// and extract archive name, size and BLAKE2 hash
+int parse_ebuild_manifest(char* manifest, size_t ver_count, s_package** pkg);
 
 // Parse package folder in ebuild repo
 // and returns all versions of package

@@ -13,7 +13,7 @@
 #include "defines.h"
 
 // 2Mb - approximate max size of package data
-#define THR_BUFFER_SIZE 2097152
+#define THR_BUFFER_SIZE 1024*128
 
 // 512kb - buffer size for single
 // Gentoo repo directory

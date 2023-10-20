@@ -152,16 +152,12 @@ size_t get_files(char* addr, char*** dirs, int is_dir)
     if ( ret_val != 0 )
     {
         fprintf(stderr, " [ERROR] Can't download page %s\n", addr);
-        return -1;
+        return 0;
     }
-
-    // Get length of page content
-    uint32_t content_len = strlen(content);
 
     // Consider line is containing dir 
     // if it starts with
     const char* p_line_start = "<a href=\'";
-    size_t start_len = strlen(p_line_start);
 
     // Define buffer array of dirs 
     char* buffer[MAX_DIRS];
@@ -222,6 +218,41 @@ size_t get_files(char* addr, char*** dirs, int is_dir)
     return dir_count;
 }
 
+int parse_ebuild_manifest(char* manifest, size_t ver_count, s_package** pkg)
+{
+    char* spaces[4];
+    // Iterate over lines(versions)
+    for ( int i = 0; i < ver_count; i++ )
+    {
+        // Get indexes of spaces to split data from e.g.
+        // DIST ansible-7.7.0.tar.gz 40709642 BLAKE2B ee2f8d124f7
+        spaces[0] = strstr(manifest+1, " ");
+        for ( int j = 1; j < 4; j++ )
+            spaces[j] = strstr(spaces[j-1] + 1, " ");
+
+        // Calculate sizes
+        size_t archive_len = spaces[1] - spaces[0] - 1;
+        size_t size_len = spaces[2] - spaces[1] - 1;
+
+        // Allocate memory
+        (*pkg)[i].archive = (char*)calloc(archive_len+1, sizeof(char));
+        (*pkg)[i].size_str = (char*)calloc(size_len+1, sizeof(char));
+
+        /* // Copy data */
+        memcpy((*pkg)[i].archive, spaces[0]+1, archive_len);
+        memcpy((*pkg)[i].size_str, spaces[1]+1, size_len);
+        memcpy((*pkg)[i].folder, spaces[3]+1, 2); // First 2 symbols of hash are folder in repo
+        (*pkg)[i].folder[2] = '\0';
+
+        // Goto next line
+        manifest = strstr(manifest+1, "DIST");
+        if ( manifest == NULL )
+            break;
+    }
+
+    return 0;
+}
+
 size_t parse_ebuild_package(char* addr, char* name, s_package** pkg)
 {
     // Calculate name length, will be used later
@@ -241,9 +272,13 @@ size_t parse_ebuild_package(char* addr, char* name, s_package** pkg)
     char** p_files;
     size_t f_count = get_files(addr, &p_files, 0);
 
+    // Buffer for package' versions
+    /* s_package buffer[MAX_VERSIONS]; */
+    s_package* buffer = (s_package*)calloc(MAX_VERSIONS, sizeof(s_package));
+    size_t ver_count = 0;
+
     // Iterate over list and find
     // all available versions
-    printf(" [DEBUG] Package %s, versions:\n", name);
     for ( int i = 0; i < f_count; i++ )
     {
         // If file ends with .ebuild,
@@ -254,15 +289,24 @@ size_t parse_ebuild_package(char* addr, char* name, s_package** pkg)
 
         // Calculate length of version and copy
         size_t ver_len = (ebuild_idx - p_files[i]) - name_len;
-        char* ver = (char*)calloc(ver_len+1, sizeof(char));
-        memcpy(ver, p_files[i]+name_len, ver_len);
+        buffer[ver_count].ver = (char*)calloc(ver_len+1, sizeof(char));
+        memcpy(buffer[ver_count].ver, p_files[i]+name_len, ver_len);
 
-        printf("  [DEBUG] %s\n", ver);
+        // Copy name as well
+        buffer[ver_count].name = (char*)calloc(name_len+1, sizeof(char));
+        memcpy(buffer[ver_count].name, name, name_len-1); // Excluding last symbol (/)
 
-        // === TODO === //
-        // 1) Extract archive name, size and BLAKE2 hash from Manifest
+        ver_count++;
     }
+    
+    // Parse data from manifest
+    parse_ebuild_manifest(manifest, ver_count, &buffer);
 
-    return 0;
+    // Copy pointer
+    *pkg = buffer;
+
+    free(manifest);
+
+    return ver_count;
 
 }
