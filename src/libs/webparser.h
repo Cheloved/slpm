@@ -11,6 +11,7 @@
 
 #define MAX_PACK_PER_GENTOO_DIR 512
 #define MAX_DIRS 2048
+#define MAX_PATH_LEN 512
 
 // Gets length of a line
 size_t get_line_len(char* line);
@@ -23,6 +24,10 @@ size_t get_name(char* line, size_t line_len, char** name);
 // is_dir = 1  - search for folders only
 // is_dir = -1 - search for both
 size_t get_files(char* addr, char*** dirs, int is_dir);
+
+// Parse package folder in ebuild repo
+// and returns all versions of package
+size_t parse_ebuild_package(char* addr, char* name, s_package** pkg);
 
 // Parses content of line into package struct
 int parse_gentoo_line(char* line, size_t len, s_package* package);

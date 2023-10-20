@@ -1,5 +1,6 @@
 #include "libs/webutils.h"
 #include "libs/core.h"
+#include "libs/curlfetch.h"
 #include "libs/defines.h"
 #include "libs/packages.h"
 #include "libs/webparser.h"
@@ -197,16 +198,20 @@ void* thread_fetch_ebuild(void *vargp)
 
         for ( int j = 0; j < p_count; j++ )
         {
-            printf(" [DEBUG] Thread %d found package %s\n", data->id,
-                                                            p_dirs[j]);
-            
+            /* printf(" [DEBUG] Thread %d found package %s\n", data->id, */
+            /*                                                 p_dirs[j]); */
+
+            // Concatenate addr and package name to get full path
+            char p_path[MAX_PATH_LEN] = {0};
+            strcat(p_path, addr);
+            strcat(p_path, p_dirs[j]);
+
+            // Parse all available versions of package
+            s_package* pkg;
+            size_t ver_count = parse_ebuild_package(p_path, p_dirs[j], &pkg);
+
             // === TODO === //
-            // 1) Concatenate addr and package name
-            // 2) Get list of all files in package folder
-            // 3) Search for Manifest file and skip if not exists
-            // 4) Extract available versions from *.ebuild files
-            // 5) Extract archive name, size and BLAKE2 hash from Manifest
-            // 6) Convert to string and append to packages_string
+            // 1) Convert to string and append to packages_string
         }
 
         /* // Buffer for conversion from package to string */

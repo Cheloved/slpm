@@ -221,3 +221,48 @@ size_t get_files(char* addr, char*** dirs, int is_dir)
 
     return dir_count;
 }
+
+size_t parse_ebuild_package(char* addr, char* name, s_package** pkg)
+{
+    // Calculate name length, will be used later
+    size_t name_len = strlen(name);
+
+    // Concat manifest path and try to download
+    char man_path[MAX_PATH_LEN] = {0};
+    strcat(man_path, addr);
+    strcat(man_path, "Manifest");
+
+    char* manifest;
+    int man_ret_val = download_page(man_path, &manifest);
+    if ( man_ret_val != 0 ) // Skip if not exists
+        return 0;
+
+    // Get list of files
+    char** p_files;
+    size_t f_count = get_files(addr, &p_files, 0);
+
+    // Iterate over list and find
+    // all available versions
+    printf(" [DEBUG] Package %s, versions:\n", name);
+    for ( int i = 0; i < f_count; i++ )
+    {
+        // If file ends with .ebuild,
+        // we can extract version, e.g. name-1.2.3.ebuild
+        char* ebuild_idx = strstr(p_files[i], ".ebuild");
+        if ( ebuild_idx == NULL )
+            continue;
+
+        // Calculate length of version and copy
+        size_t ver_len = (ebuild_idx - p_files[i]) - name_len;
+        char* ver = (char*)calloc(ver_len+1, sizeof(char));
+        memcpy(ver, p_files[i]+name_len, ver_len);
+
+        printf("  [DEBUG] %s\n", ver);
+
+        // === TODO === //
+        // 1) Extract archive name, size and BLAKE2 hash from Manifest
+    }
+
+    return 0;
+
+}

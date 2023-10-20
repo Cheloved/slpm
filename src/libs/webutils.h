@@ -19,6 +19,8 @@
 // Gentoo repo directory
 #define THR_BATCH_SIZE 524288
 
+#define MAX_PATH_LEN 512
+
 // This structure is passed
 // to threads' function as argument
 typedef struct {
