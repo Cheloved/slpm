@@ -123,11 +123,11 @@ size_t get_name(char* line, size_t line_len, char** name)
     // between whose name is contained
     char* quote1 = strstr(line, "\'");
     if ( quote1 == NULL )
-        return -1;
+        return 0;
 
     char* quote2 = strstr(quote1+1, "\'");
     if ( quote2 == NULL )
-        return -1;
+        return 0;
     
     // Find previous slash
     char* p = quote2 - 2;
