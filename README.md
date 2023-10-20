@@ -1,5 +1,7 @@
 # SLPM - Simple LFS Package Manager
 
+## Warning: shell version is depricated. C version is in the development stage
+
 ## About
     SLPM is able to install packages from tar archives, track them and remove.
 
