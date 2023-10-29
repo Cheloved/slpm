@@ -1,9 +1,13 @@
 #ifndef __H_CURLFETCH
 #define __H_CURLFETCH
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
+
+#include "webparser.h"
+#include "packages.h"
 
 // Struct that holds response
 typedef struct {

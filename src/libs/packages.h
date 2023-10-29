@@ -12,13 +12,16 @@ typedef struct
 {
     char* name;
     char* ver;
-    char* last_upload;
+    char* archive;
     char* size_str;
-    uint32_t size;
+    char folder[3];
     char* link;
 } s_package;
 
 // Converts struct data to string
 char* package_to_str(s_package* package);
+
+// Converts struct data to user-readable string
+char* package_to_search_result(s_package* package);
 
 #endif

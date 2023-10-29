@@ -1,5 +1,4 @@
 #include "libs/curlfetch.h"
-#include <stdio.h>
 
 void init_string(s_response_str* s)
 {
@@ -54,22 +53,18 @@ int download_page(char* path, char** content)
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+    curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
     /* curl_easy_setopt (curl, CURLOPT_VERBOSE, 1L); */
 
     // GET request
     result = curl_easy_perform(curl);
-    if ( result != CURLE_OK )
-    {
-        fprintf(stderr, " [E] curl_easy_perform() failed: %s\n",
-                curl_easy_strerror(result));
+    if ( result != CURLE_OK || result == CURLE_HTTP_RETURNED_ERROR )
         return -1;
-    }
 
     // Return content
     *content = response.ptr;
 
     // Clean things up
     curl_easy_cleanup(curl);
-
     return 0;
 }
