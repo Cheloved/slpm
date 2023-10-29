@@ -66,6 +66,5 @@ int download_page(char* path, char** content)
 
     // Clean things up
     curl_easy_cleanup(curl);
-
     return 0;
 }
