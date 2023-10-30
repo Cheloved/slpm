@@ -1,4 +1,7 @@
 #include "libs/webutils.h"
+#include "libs/core.h"
+#include "libs/defines.h"
+#include <stdio.h>
 
 /*
  * This variable locks access to 
@@ -6,7 +9,7 @@
  * access to it
 */
 atomic_int lock;
- 
+
 void* thread_search_ebuild(void *vargp) 
 { 
     // Store the ID value
@@ -35,28 +38,23 @@ void* thread_search_ebuild(void *vargp)
     for ( uint32_t i = start_dir; i < end_dir; i++ )
     {
         // Template for full path
-        char* template = "%s%s";
+        char* template = "%s/%s/";
 
         // Size of address is length of mirror
         // + length of category
+        // + 2 for /
         // + 1 for null-terminator
-        size_t addr_size = strlen(data->mirror) +
-                           strlen(data->categories[i]) + 1;
+        size_t addr_size = strlen(GIT_REPO_PATH) +
+                           strlen(data->categories[i]) + 3;
         char addr[addr_size];
         bzero(addr, addr_size);
 
         // Insert data in template
-        sprintf(addr, template, data->mirror, data->categories[i]);
-
-        // Download category page using libcurl
-        char* content;
-        int ret_val = download_page(addr, &content);
-        if ( ret_val != 0 )
-            continue;
+        sprintf(addr, template, GIT_REPO_PATH, data->categories[i]);
 
         // Parse all packages directories
         char** p_dirs;
-        size_t p_count = get_files(addr, &p_dirs, 1);
+        size_t p_count = Get_files_list(addr, &p_dirs, 1);
         if ( p_count == 0 )
             continue;
 
@@ -116,18 +114,14 @@ void* thread_search_ebuild(void *vargp)
     pthread_exit(0);
 } 
 
-int search_ebuild(char* search, uint32_t thr_count, char* mirror)
+int search_ebuild(char* search, uint32_t thr_count)
 {
-    curl_global_init(CURL_GLOBAL_ALL);
-
     Remove_file(SEARCH_TMP_PATH);
 
     char** categories;
-    size_t c_count = get_files(mirror, &categories, 1);
+    size_t c_count = Get_files_list(GIT_REPO_PATH, &categories, 1);
     if ( c_count == 0 )
         return 0;
-
-    /* printf(" [DEBUG] %lu categories found\n", c_count); */
   
     // Array that hold thread IDs
     pthread_t thread_ids[thr_count];
@@ -146,7 +140,6 @@ int search_ebuild(char* search, uint32_t thr_count, char* mirror)
         data[i].thr_count = thr_count;
         data[i].search = search;
         data[i].search_len = search_len;
-        data[i].mirror = mirror;
         data[i].c_count = c_count;
         data[i].categories = categories;
         pthread_create(&thread_ids[i], NULL, 
@@ -156,8 +149,22 @@ int search_ebuild(char* search, uint32_t thr_count, char* mirror)
     // Join threads
     for( int i = 0; i < thr_count; i++)
         pthread_join(thread_ids[i], NULL);
-  
-    curl_global_cleanup();
 
     return 0; 
+}
+
+int fetch_ebuild(char* mirror)
+{
+    // Remove previous clone if exists
+    Remove_dir(GIT_REPO_PATH); 
+
+    // Cloning repo
+    int retval = CMD_list("git", NULL, 5, "clone", "--depth=1", "-j5", mirror, GIT_REPO_PATH);
+
+    if ( retval == 0 )
+        printf(" Successfully fetched\n");
+    else
+        fprintf(stderr, " Error occurred while fetching.\nCheck internet connection or mirrors\n");
+    
+    return 0;
 }
