@@ -1,4 +1,6 @@
+#include "libs/core.h"
 #include "libs/curlfetch.h"
+#include <unistd.h>
 
 size_t get_line_len(char* line)
 {
@@ -154,16 +156,20 @@ size_t parse_ebuild_package(char* addr, char* name, s_package** pkg)
     // Concat manifest path and try to download
     char man_path[MAX_PATH_LEN] = {0};
     strcat(man_path, addr);
+    strcat(man_path, "/");
     strcat(man_path, "Manifest");
 
+    // Read Manifest file
     char* manifest;
-    int man_ret_val = download_page(man_path, &manifest);
-    if ( man_ret_val != 0 ) // Skip if not exists
+    size_t man_len = Read_file(man_path, &manifest);
+
+    // Skip if Manifest file does not exist
+    if ( man_len == 0 )
         return 0;
 
     // Get list of files
     char** p_files;
-    size_t f_count = get_files(addr, &p_files, 0);
+    size_t f_count = Get_files_list(addr, &p_files, 0);
 
     // Buffer for package' versions
     /* s_package buffer[MAX_VERSIONS]; */
@@ -181,13 +187,13 @@ size_t parse_ebuild_package(char* addr, char* name, s_package** pkg)
             continue;
 
         // Calculate length of version and copy
-        size_t ver_len = (ebuild_idx - p_files[i]) - name_len;
+        size_t ver_len = (ebuild_idx - p_files[i]) - name_len-1;
         buffer[ver_count].ver = (char*)calloc(ver_len+1, sizeof(char));
-        memcpy(buffer[ver_count].ver, p_files[i]+name_len, ver_len);
+        memcpy(buffer[ver_count].ver, p_files[i]+name_len+1, ver_len);
 
         // Copy name as well
         buffer[ver_count].name = (char*)calloc(name_len+1, sizeof(char));
-        memcpy(buffer[ver_count].name, name, name_len-1); // Excluding last symbol (/)
+        memcpy(buffer[ver_count].name, name, name_len);
 
         ver_count++;
     }

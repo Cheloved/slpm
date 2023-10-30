@@ -8,11 +8,7 @@
 #include <string.h>
 #include <stdint.h>
 #include "packages.h"
-
-#define MAX_PACK_PER_GENTOO_DIR 512
-#define MAX_DIRS 2048
-#define MAX_PATH_LEN 512
-#define MAX_VERSIONS 1024
+#include "defines.h"
 
 // Gets length of a line
 size_t get_line_len(char* line);

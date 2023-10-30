@@ -16,21 +16,11 @@
 #include "packages.h"
 #include "webparser.h"
 
-// 2Mb - approximate max size of package data
-#define THR_BUFFER_SIZE 1024*128
-
-// 512kb - buffer size for single
-// Gentoo repo directory
-#define THR_BATCH_SIZE 524288
-
-#define MAX_PATH_LEN 512
-
 // This structure is passed
 // to threads' function as argument
 typedef struct {
     uint32_t id;
     uint32_t thr_count;
-    char* mirror;
 
     char* search;
     size_t search_len;
@@ -40,6 +30,7 @@ typedef struct {
 } s_fetch_data;
 
 void* thread_search_ebuild(void *vargp);
-int search_ebuild(char* search, uint32_t thr_count, char* mirror);
+int search_ebuild(char* search, uint32_t thr_count);
+int fetch_ebuild(char* mirror);
 
 #endif

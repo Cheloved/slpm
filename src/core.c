@@ -1,4 +1,5 @@
 #include "libs/core.h"
+#include "libs/defines.h"
 
 int is_dir(const char *path)
 {
@@ -133,6 +134,12 @@ int Remove_file(char *file)
 
 int Remove_dir(char *dir)
 {
+    // Try to open to check
+    // whether it exists
+    DIR* d = opendir(dir);
+    if ( errno == ENOENT )
+        return 0;
+
     // Delete if empty
     int ret_val = rmdir(dir);
 
@@ -215,4 +222,68 @@ int Copy_file_to_file(char* from, char* to)
     int ret_val = CMD_vec("cp", NULL, 2, args);
 
     return ret_val;
+}
+
+size_t Get_files_list(char* source, char*** result, int is_dir)
+{
+    // Open directory and create
+    // entiry buffer
+    DIR* d = opendir(source);
+    struct dirent* dir;
+
+    // Check if source does not exist
+    if ( d == NULL )
+        return 0;
+
+    char* buffer[MAX_DIRS];
+    size_t count = 0;
+
+    // Iterate over files
+    while ((dir = readdir(d)) != NULL)
+    {
+        // Skip useless
+        if ( !strcmp(dir->d_name, ".") || !strcmp(dir->d_name, ".."))
+            continue;
+
+        // If searching for files, but name is directory, skip
+        if ( is_dir == 0 && (int)dir->d_type == 4 )
+            continue;
+
+        // If searching for directories, but name is file, skip
+        if ( is_dir == 1 && (int)dir->d_type == 8 )
+            continue;
+
+        // Copy name to buffer
+        size_t name_len = strlen(dir->d_name);
+        buffer[count] = calloc(name_len+1, sizeof(char));
+        memcpy(buffer[count], dir->d_name, name_len);
+        count++;
+    }
+
+    *result = (char**)calloc(count, sizeof(char*));
+    memcpy(*result, buffer, count*sizeof(char*));
+
+    closedir(d);
+    return count;
+}
+
+size_t Read_file(char* source, char** result)
+{
+    // Open file
+    FILE* f = fopen(source, "r");
+
+    // Check for errors
+    if ( f == NULL )
+        return 0;
+
+    // Get length of file
+    fseek(f, 0, SEEK_END);
+    size_t len = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    // Allocate memory and read
+    *result = (char*)calloc(len, sizeof(char));
+    fread(*result, sizeof(char), len, f);
+
+    return len;
 }

@@ -9,6 +9,9 @@
 #include <errno.h>    // For handling errors
 #include <stdarg.h>   // For variadic functions
 #include <sys/stat.h> // stat(), S_ISDIR
+#include <dirent.h>   // opendir()
+#include <string.h>
+#include "defines.h"
 
 // Check if path is directory
 int is_dir(const char* path);
@@ -47,5 +50,13 @@ int Copy_dir_to_dir(char* from_dir, char* target_dir);
 
 // cp from to 
 int Copy_file_to_file(char* from, char* to);
+
+// Gets list of files in source directory.
+// If is_dir == 1, returns only directories
+//    is_dir == 0, returns only files
+//    is_dir == -1, returns both
+size_t Get_files_list(char* source, char*** result, int is_dir);
+
+size_t Read_file(char* source, char** result);
 
 #endif
