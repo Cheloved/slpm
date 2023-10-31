@@ -6,7 +6,6 @@
 #include <string.h>
 #include <curl/curl.h>
 
-#include "webparser.h"
 #include "packages.h"
 
 // Struct that holds response

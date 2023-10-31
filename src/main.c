@@ -3,8 +3,8 @@
 #include <string.h>
 #include "libs/core.h"
 #include "libs/defines.h"
-#include "libs/utils.h"
-#include "libs/webutils.h"
+#include "libs/sys_utils.h"
+#include "libs/gentoo_utils.h"
 #include "libs/curlfetch.h"
 #include "libs/logging.h"
 

@@ -13,9 +13,6 @@
 #include "core.h"
 #include "logging.h"
 
-// Gets length of a line
-size_t get_line_len(char* line);
-
 // Parse manifest file
 // and extract archive name, size and BLAKE2 hash
 int parse_ebuild_manifest(char* manifest, size_t ver_count, s_package** pkg);

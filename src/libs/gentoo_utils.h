@@ -1,5 +1,5 @@
-#ifndef __H_WEBUTILS
-#define __H_WEBUTILS
+#ifndef __H_GENTOO_UTILS
+#define __H_GENTOO_UTILS
 
 #include <stdio.h>     // Input/output, remove()
 #include <stdlib.h>    // exit()
@@ -14,7 +14,7 @@
 #include "curlfetch.h"
 #include "defines.h"
 #include "packages.h"
-#include "webparser.h"
+#include "gentoo_parser.h"
 #include "logging.h"
 
 // This structure is passed

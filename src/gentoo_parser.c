@@ -1,14 +1,4 @@
-#include "libs/webparser.h"
-
-size_t get_line_len(char* line)
-{
-    // Iterate over line until end of file or newline symbol
-    size_t len = 0;
-    while ( line[len] != EOF && line[len] != '\n' )
-        len++;
-
-    return len;
-}
+#include "libs/gentoo_parser.h"
 
 int parse_ebuild_manifest(char* manifest, size_t ver_count, s_package** pkg)
 {
