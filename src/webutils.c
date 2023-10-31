@@ -1,20 +1,10 @@
 #include "libs/webutils.h"
-#include "libs/core.h"
-#include "libs/defines.h"
-#include <stdio.h>
-
-/*
- * This variable locks access to 
- * file so that only one thread has
- * access to it
-*/
-atomic_int lock;
 
 void* thread_search_ebuild(void *vargp) 
 { 
     // Store the ID value
     s_fetch_data* data = (s_fetch_data*) vargp;
-    /* printf(" [DEBUG] Thread ID: %u\n", data->id); */ 
+    log_trace("Thread %u started", data->id); 
 
     // Get folder names to fetch
     // by getting start and end indexes
@@ -25,9 +15,6 @@ void* thread_search_ebuild(void *vargp)
         end_dir = (data->id+1) * dir_per_thread - 1;
     else
         end_dir = data->c_count;
-
-    /* printf(" [DEBUG] Thread %u\n\tStart: %u\n\tEnd: %u\n\tDPT: %u\n\n", */
-    /*         data->id, start_dir, end_dir, dir_per_thread); */
 
     // Allocate memory to be enough even
     // if amount of threads is 1.
@@ -58,8 +45,7 @@ void* thread_search_ebuild(void *vargp)
         if ( p_count == 0 )
             continue;
 
-        /* printf(" [DEBUG] Thread %d found %lu packages in %s\n", */
-        /*         data->id, p_count, data->categories[i]); */
+        log_trace("Thread %d found %lu packages in %s", data->id, p_count, data->categories[i]);
 
         // Iterate over packages dirs and search
         for ( int j = 0; j < p_count; j++ )
@@ -89,7 +75,7 @@ void* thread_search_ebuild(void *vargp)
                 char* buffer = package_to_str(&pkgs[n]);
                 if ( search_str != NULL )
                 {
-                    printf("%s", search_str);
+                    log_info("%s", search_str);
                     free(search_str);
                 }
                 if ( buffer != NULL )
@@ -111,6 +97,8 @@ void* thread_search_ebuild(void *vargp)
     // Close the file
     fclose(fptr);
 
+    log_trace("Thread %d finished", data->id);
+
     pthread_exit(0);
 } 
 
@@ -120,8 +108,13 @@ int search_ebuild(char* search, uint32_t thr_count)
 
     char** categories;
     size_t c_count = Get_files_list(GIT_REPO_PATH, &categories, 1);
+    log_debug("%d categories found", c_count);
+
     if ( c_count == 0 )
+    {
+        log_error("Repository not found. Try \'slpm fetch\'"); 
         return 0;
+    }
   
     // Array that hold thread IDs
     pthread_t thread_ids[thr_count];

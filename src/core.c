@@ -1,5 +1,4 @@
 #include "libs/core.h"
-#include "libs/defines.h"
 
 int is_dir(const char *path)
 {

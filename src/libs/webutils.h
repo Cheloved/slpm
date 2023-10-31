@@ -15,6 +15,7 @@
 #include "defines.h"
 #include "packages.h"
 #include "webparser.h"
+#include "logging.h"
 
 // This structure is passed
 // to threads' function as argument
@@ -29,8 +30,13 @@ typedef struct {
     char** categories;
 } s_fetch_data;
 
+// Thread function called from search_ebuild()
 void* thread_search_ebuild(void *vargp);
+
+// Searches for packages in cloned git repo
 int search_ebuild(char* search, uint32_t thr_count);
+
+// Clones git ebuild repo
 int fetch_ebuild(char* mirror);
 
 #endif

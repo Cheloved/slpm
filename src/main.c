@@ -6,13 +6,19 @@
 #include "libs/utils.h"
 #include "libs/webutils.h"
 #include "libs/curlfetch.h"
+#include "libs/logging.h"
 
 // Just testing
 int main(int argc, char** argv)
 {
-    /* if ( argc == 2 ) */
-    /*     if ( !strcmp(argv[1], "fetch") ) */
-    /*         fetch_ebuild("https://github.com/gentoo/gentoo"); */
+    // Initialize logging
+    log_init(LOG_INFO, 0);
+    log_init(LOG_TRACE, 0);
+    log_info("Program started");
+
+    if ( argc == 2 )
+        if ( !strcmp(argv[1], "fetch") )
+            fetch_ebuild("https://github.com/gentoo/gentoo");
 
     if ( argc >= 3 )
     {
